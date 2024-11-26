@@ -1,0 +1,18 @@
+{
+  "auth": {
+    "login": {
+      "username": "test",
+      "password": "1234",
+      "token": "mock-jwt-token"
+    }
+  },
+  "users": [
+    {
+      "id": 1,
+      "fullName": "John Doe",
+      "email": "johndoe@example.com",
+      "username": "test",
+      "password": "1234"
+    }
+  ]
+}
