@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="container centered">
     <SignInForm
       v-if="isSignInFormVisible"
       :onSignIn="handleSignIn"
@@ -35,66 +35,95 @@ export default {
     },
     async handleSignIn(formData, errors) {
       try {
-        const response = await axios.post("/auth/login", formData);
-        console.log(response);
-        if (response.status === 200) {
+        console.log("Sending sign-in request with:", formData);
+        const response = await axios.get("/users", formData);
+        const user = response.data.find(
+          (u) =>
+            u.username === formData.username && u.password === formData.password
+      );
+        if (user) {
           alert("Sign-In Successful!");
-          localStorage.setItem("userToken", response.data.token);
-          this.$router.push("/dashboard");
+          localStorage.setItem("userToken", "mock-jwt-token");
+          localStorage.setItem("user", JSON.stringify(user))
+
+          // Redirect to the dashboard (uncomment when the dashboard is ready)
+          // this.$router.push("/dashboard");
+        } else {
+          errors.general = "Invalid username or password."
         }
       } catch (error) {
-        if (error.response && error.response.status === 401) {
-          errors.general = "Invalid username or password.";
-        } else {
-          errors.general = "Something went wrong. Please try again.";
-        }
+        console.error("Sign-in error:", error.response || error.message);
+        errors.general = "Something went wrong. Please try again.";
       }
     },
     async handleSignUp(formData, errors) {
       try {
-        const response = await axios.post("/auth/register", formData);
+        // Check if the username or email already exists
+        const existingUsers = await axios.get("/users");
+        const userExists = existingUsers.data.some(
+          (user) =>
+            user.username === formData.username || user.email === formData.email
+        );
+        if (userExists) {
+          errors.general = "Username or email is already taken.";
+          return;
+        }
+        // Add the new user to the database
+        const response = await axios.post("/users", formData);
+        
         if (response.status === 201) {
           alert("Sign-Up Successful! You can now sign in.");
-          this.toggleForm();
+          this.toggleForm(); // Switch to the Sign-In form
         }
       } catch (error) {
+        console.error("Sign-up error:", error.response || error.message);
         if (error.response && error.response.status === 400) {
           errors.general = "Invalid data provided. Please check your input.";
         } else {
           errors.general = "Something went wrong. Please try again.";
         }
       }
-    },
+    }
+
   },
 };
 </script>
 
 <style scoped>
-body {
-  font-family: Arial, sans-serif;
+body, html {
   margin: 0;
-  background-color: #f4f4f4;
+  padding: 0;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  background-color: #f4f4f4;
 }
+
 .container {
   width: 400px;
   background-color: #fff;
   padding: 30px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
+
+
 h2 {
   text-align: center;
   margin-bottom: 20px;
 }
+
 label {
   font-weight: bold;
   display: block;
   margin-top: 10px;
 }
+
 input[type="text"],
 input[type="email"],
 input[type="password"] {
@@ -104,6 +133,7 @@ input[type="password"] {
   border: 1px solid #ddd;
   border-radius: 4px;
 }
+
 button {
   width: 100%;
   background-color: #007bff;
@@ -114,14 +144,17 @@ button {
   border-radius: 4px;
   margin-top: 20px;
 }
+
 button:hover {
   background-color: #0056b3;
 }
+
 .error-message {
   color: red;
   font-size: 0.9em;
   margin-top: 5px;
 }
+
 .toggle-link {
   display: block;
   text-align: center;
@@ -129,9 +162,11 @@ button:hover {
   color: #007bff;
   cursor: pointer;
 }
+
 .toggle-link:hover {
   text-decoration: underline;
 }
+
 @media (max-width: 600px) {
   .container {
     width: 90%;
