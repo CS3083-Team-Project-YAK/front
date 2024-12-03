@@ -35,45 +35,47 @@ export default {
     },
     async handleSignIn(formData, errors) {
       try {
-        console.log("Sending sign-in request with:", formData);
-        const response = await axios.get("/users", formData);
-        const user = response.data.find(
-          (u) =>
-            u.username === formData.username && u.password === formData.password
-      );
-        if (user) {
-          alert("Sign-In Successful!");
-          localStorage.setItem("userToken", "mock-jwt-token");
-          localStorage.setItem("user", JSON.stringify(user))
+        const params = new URLSearchParams();
+        params.append('username', formData.username);
+        params.append('password', formData.password);
 
-          // Redirect to the dashboard (uncomment when the dashboard is ready)
-          // this.$router.push("/dashboard");
-        } else {
-          errors.general = "Invalid username or password."
+        const response = await axios.post("/users/login", params, {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        });
+        console.log("Sign-In formData:", formData);
+        if (response.status === 200) {
+          localStorage.setItem("userToken", response.data.token);
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+          this.$router.push("/dashboard"); // Adjust as necessary
+          alert("Sign-In Successful!");
         }
       } catch (error) {
         console.error("Sign-in error:", error.response || error.message);
-        errors.general = "Something went wrong. Please try again.";
+        if (error.response && error.response.status === 401) {
+          errors.general = "Invalid username or password.";
+        } else {
+          errors.general = "Something went wrong. Please try again.";
+        }
       }
     },
     async handleSignUp(formData, errors) {
+      console.log("Sign-Up formData:", formData);
       try {
-        // Check if the username or email already exists
-        const existingUsers = await axios.get("/users");
-        const userExists = existingUsers.data.some(
-          (user) =>
-            user.username === formData.username || user.email === formData.email
-        );
-        if (userExists) {
-          errors.general = "Username or email is already taken.";
-          return;
-        }
-        // Add the new user to the database
-        const response = await axios.post("/users", formData);
-        
-        if (response.status === 201) {
+        const response = await axios.post("/users/register", {
+          full_name: formData.fullName,
+          username: formData.username,
+          email_address: formData.email,  // Ensure this matches the attribute name in UserCreate
+          password: formData.password,
+        }, {
+          headers: {
+            'Content-Type': 'application/json'  // Ensure the content type is set to application/json
+          }
+        });
+        if (response.status === 200) {
           alert("Sign-Up Successful! You can now sign in.");
-          this.toggleForm(); // Switch to the Sign-In form
+          this.toggleForm(); // Switch back to sign-in form
         }
       } catch (error) {
         console.error("Sign-up error:", error.response || error.message);
@@ -83,8 +85,7 @@ export default {
           errors.general = "Something went wrong. Please try again.";
         }
       }
-    }
-
+    },
   },
 };
 </script>
@@ -111,7 +112,6 @@ body, html {
   justify-content: center;
   align-items: center;
 }
-
 
 h2 {
   text-align: center;
