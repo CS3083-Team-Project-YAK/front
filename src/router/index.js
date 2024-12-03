@@ -10,7 +10,7 @@ import SignInPage from "@/views/SignInPage.vue";
 
 const routes = [
   { path: "/login", name: "Login", component: SignInPage },
-  
+  { path: "/dashboard", name: "Dashboard", component: DashboardView},
   { path: "/leagues", name: "Leagues", component: LeagueView, meta: { requiresAuth: true } },
   { path: "/teams", name: "Teams", component: TeamView, meta: { requiresAuth: true } },
   { path: "/players", name: "Players", component: PlayerView, meta: { requiresAuth: true } },

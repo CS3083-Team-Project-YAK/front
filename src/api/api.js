@@ -3,9 +3,6 @@ import axios from 'axios';
 
 const apiClient = axios.create({
   baseURL: 'http://127.0.0.1:8000', // 替换为实际的API URL
-  headers: {
-    'Content-Type': 'multipart/form-data',
-  },
   withCredentials: true, // 如果需要携带凭据
 });
 

@@ -3,7 +3,11 @@ import apiClient from './api';
 import { toFormData } from './api';
 
 export async function registerUser(userData) {
-  return await apiClient.post('/api/users/register', userData);
+  return await apiClient.post('/api/users/register', userData, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
 }
 
 export async function loginUser(credentials) {
