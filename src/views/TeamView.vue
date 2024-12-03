@@ -13,7 +13,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="team in teams" :key="team.id">
+        <tr v-for="team in teams" :key="team.teamID">
           <td>{{ team.teamID }}</td>
           <td>{{ team.owner }}</td>
           <td>{{ team.leagueID }}</td>
@@ -70,7 +70,13 @@ export default {
     },
     openEditModal(team) {
       this.isEditMode = true;
-      this.selectedTeam = { ...team };
+      this.selectedTeam = {
+        id: team.teamID, // Map teamID to id for the form
+        name: team.name,
+        owner: team.owner,
+        league: team.leagueID, // Map leagueID to league for the form
+        status: team.status
+      };
       this.showModal = true;
     },
     closeModal() {
@@ -79,7 +85,7 @@ export default {
     async deleteTeam(team) {
       if (confirm(`Are you sure you want to delete ${team.name}?`)) {
         try {
-          await deleteTeam(team.id);
+          await deleteTeam(team.teamID); // Changed from team.id to team.teamID
           alert("Team deleted successfully!");
           this.fetchTeams();
         } catch (error) {

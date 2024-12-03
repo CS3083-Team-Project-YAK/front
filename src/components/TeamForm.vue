@@ -37,8 +37,8 @@
     <div class="form-group">
       <label for="status">Status</label>
       <select id="status" v-model="team.status">
-        <option value="ACTIVE">Active</option>
-        <option value="INACTIVE">Inactive</option>
+        <option value="A">Active</option>
+        <option value="I">Inactive</option>
       </select>
     </div>
 
@@ -66,10 +66,11 @@ export default {
     initialTeam: {
       type: Object,
       default: () => ({
+        id: null,
         name: "",
         owner: "",
         league: "",
-        status: "ACTIVE",
+        status: "A",
       }),
     },
     isEditMode: {
@@ -79,7 +80,13 @@ export default {
   },
   data() {
     return {
-      team: { ...this.initialTeam },
+      team: {
+        id: this.initialTeam.id,
+        name: this.initialTeam.name,
+        owner: this.initialTeam.owner,
+        league: this.initialTeam.league,
+        status: this.initialTeam.status || 'A'
+      },
       error: null,
     };
   },
@@ -116,13 +123,17 @@ export default {
           name: this.team.name.trim(),
           owner: parseInt(this.team.owner),
           league: parseInt(this.team.league),
-          status: this.team.status || 'ACTIVE'
+          status: this.team.status || 'A'
         };
 
         // 打印请求数据
         console.log('Submitting team data:', teamData);
 
         if (this.isEditMode) {
+          if (!this.team.id) {
+            this.error = "Team ID is missing";
+            return;
+          }
           await updateTeam(this.team.id, teamData);
           this.$emit("team-saved", "Team updated successfully!");
         } else {
@@ -156,10 +167,11 @@ export default {
     },
     resetForm() {
       this.team = {
+        id: null,
         name: "",
         owner: "",
         league: "",
-        status: "ACTIVE",
+        status: "A",
       };
       this.error = null;
     },

@@ -2,7 +2,7 @@ import apiClient from "./api";
 
 // Get all teams
 export const getTeams = () =>
-  apiClient.get("/api/teams/?league_id=1");
+  apiClient.get("/api/teams/all/");
 
 // Get all players in a team
 export const getTeamPlayers = (teamId) =>
