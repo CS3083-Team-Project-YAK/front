@@ -3,8 +3,8 @@
   <div>
     <input type="text" v-model="league.name" placeholder="League Name" required>
     <select v-model="league.type">
-      <option value="Public">Public</option>
-      <option value="Private">Private</option>
+      <option value="P">Public</option>
+      <option value="R">Private</option>
     </select>
     <input type="text" v-model="league.commissioner" placeholder="Commissioner (User ID)" required>
     <input type="number" v-model="league.maxTeams" placeholder="Maximum Number of Teams" required>
@@ -19,7 +19,7 @@ export default {
     return {
       league: {
         name: '',
-        type: 'Public',
+        type: 'P',
         commissioner: '',
         maxTeams: 0,
         draftDate: '',

@@ -2,7 +2,7 @@
 	<div class="main-content">
 	  <div class="content-block">
 		<h2>Active Leagues</h2>
-		<button class="create-button" @click="openNewLeagueModal">Add New League</button>
+		<button @click="showCreateLeagueModal">Create League</button>
 		<table class="leagues-table">
 		  <thead>
 			<tr>
@@ -14,124 +14,85 @@
 			</tr>
 		  </thead>
 		  <tbody>
-			<tr v-for="league in activeLeagues" :key="league.id">
-			  <td>{{ league.name }}</td>
-			  <td>{{ league.type }}</td>
+			<tr v-for="league in activeLeagues" :key="league.leagueID">
+			  <td>{{ league.league_name }}</td>
+			  <td>{{ league.league_type }}</td>
 			  <td>{{ league.commissioner }}</td>
-			  <td>{{ league.maxTeams }}</td>
+			  <td>{{ league.max_teams }}</td>
 			  <td>
-				<button class="edit-button" @click="editLeague(league)">Edit</button>
-				<button class="delete-button" @click="deleteLeague(league, true)">Delete</button>
-				<button class="archive-button" @click="archiveLeague(league)">Archive</button>
+				<button @click="editLeague(league)">Edit</button>
+				<button @click="deleteLeague(league.leagueID)">Delete</button>
 			  </td>
 			</tr>
 		  </tbody>
 		</table>
 	  </div>
   
-	  <div class="content-block">
-		<h2>Archived Leagues</h2>
-		<table class="leagues-table">
-		  <thead>
-			<tr>
-			  <th>League Name</th>
-			  <th>Type</th>
-			  <th>Commissioner</th>
-			  <th>Max Teams</th>
-			  <th>Actions</th>
-			</tr>
-		  </thead>
-		  <tbody>
-			<tr v-for="league in archivedLeagues" :key="league.id">
-			  <td>{{ league.name }}</td>
-			  <td>{{ league.type }}</td>
-			  <td>{{ league.commissioner }}</td>
-			  <td>{{ league.maxTeams }}</td>
-			  <td>
-				<button class="edit-button" @click="editLeague(league)">Edit</button>
-				<button class="delete-button" @click="deleteLeague(league, false)">Delete</button>
-				<button class="archive-button" @click="activateLeague(league)">Activate</button>
-			  </td>
-			</tr>
-		  </tbody>
-		</table>
-	  </div>
-  
-	  <!-- 编辑模态框 -->
-	  <div id="editModal" class="modal" v-if="showEditModal">
+	  <!-- 创建或编辑联盟的模态框 -->
+	  <div v-if="showEditModal" class="modal">
 		<div class="modal-content">
-		  <div class="modal-header">
-			<span class="close" @click="closeEditModal">&times;</span>
-			<h2>{{ editLeagueData.id ? 'Edit League' : 'Add New League' }}</h2>
-		  </div>
-		  <div class="modal-body">
-			<label for="leagueNameInput">League Name</label>
-			<input type="text" id="leagueNameInput" v-model="editLeagueData.name" placeholder="League Name" required>
-  
-			<label>Type</label>
-			<div>
-			  <input type="radio" id="public" value="Public" v-model="editLeagueData.type" required>
-			  <label for="public">Public</label>
-			  <input type="radio" id="private" value="Private" v-model="editLeagueData.type" required>
-			  <label for="private">Private</label>
-			</div>
-  
-			<label for="commissionerInput">Commissioner (User ID)</label>
-			<input type="text" id="commissionerInput" v-model="editLeagueData.commissioner" placeholder="Commissioner" required>
-  
-			<label for="maxTeamsInput">Max Teams</label>
-			<input type="number" id="maxTeamsInput" v-model="editLeagueData.maxTeams" placeholder="Max Teams" required>
-  
-			<button @click="saveChanges">Save Changes</button>
-		  </div>
+		  <h2>{{ isEditing ? 'Edit League' : 'Create League' }}</h2>
+		  <label>League Name</label>
+		  <input v-model="editLeagueData.league_name" placeholder="Enter league name" />
+		  <label>League Type</label>
+		  <select v-model="editLeagueData.league_type">
+			<option value="P">Public</option>
+			<option value="R">Private</option>
+		  </select>
+		  <label v-show="isEditing">Commissioner</label>
+		  <input v-model="editLeagueData.commissioner" v-show="isEditing" placeholder="Enter commissioner ID" />
+		  <label>Max Teams</label>
+		  <input v-model="editLeagueData.max_teams" type="number" placeholder="Enter max teams" />
+		  <label>Draft Date</label>
+		  <input v-model="editLeagueData.draft_date" type="date" />
+		  <button @click="saveChanges">{{ isEditing ? 'Save Changes' : 'Create League' }}</button>
+		  <button @click="closeEditModal">Cancel</button>
 		</div>
 	  </div>
 	</div>
   </template>
   
   <script>
-  import { getLeagues, createLeague, updateLeague, deleteLeague } from '@/api/leagues';
+  import { getLeagues, createLeague, updateLeague, deleteLeague } from "@/api/leagues";
   
   export default {
-	name: 'LeagueView',
+	name: "LeagueView",
 	data() {
 	  return {
 		activeLeagues: [],
-		archivedLeagues: [],
 		showEditModal: false,
+		isEditing: false,
 		editLeagueData: {
-		  id: null,
-		  name: '',
-		  type: '',
-		  commissioner: '',
-		  maxTeams: null,
+		  league_name: "",
+		  league_type: "P",
+		  commissioner: "",
+		  max_teams: 10,
+		  draft_date: "",
 		},
 	  };
-	},
-	mounted() {
-	  this.fetchLeagues();
 	},
 	methods: {
 	  async fetchLeagues() {
 		try {
 		  const response = await getLeagues();
-		  this.activeLeagues = response.data.active || [];
-		  this.archivedLeagues = response.data.archived || [];
+		  this.activeLeagues = response.data;
 		} catch (error) {
-		  console.error('加载联赛数据失败:', error);
+		  console.error("Error fetching leagues:", error);
 		}
 	  },
-	  openNewLeagueModal() {
+	  showCreateLeagueModal() {
+		this.isEditing = false;
 		this.editLeagueData = {
-		  id: null,
-		  name: '',
-		  type: '',
-		  commissioner: '',
-		  maxTeams: null,
+		  league_name: "",
+		  league_type: "Public",
+		  commissioner: "",
+		  max_teams: 10,
+		  draft_date: "",
 		};
 		this.showEditModal = true;
 	  },
 	  editLeague(league) {
+		this.isEditing = true;
 		this.editLeagueData = { ...league };
 		this.showEditModal = true;
 	  },
@@ -140,48 +101,57 @@
 	  },
 	  async saveChanges() {
 		try {
-		  if (this.editLeagueData.id) {
-			await updateLeague(this.editLeagueData.id, this.editLeagueData);
+		  if (this.isEditing) {
+			await updateLeague(this.editLeagueData.leagueID, this.editLeagueData);
+			alert("League updated successfully!");
 		  } else {
 			await createLeague(this.editLeagueData);
+			alert("League created successfully!");
 		  }
 		  this.fetchLeagues();
-		  this.showEditModal = false;
+		  this.closeEditModal();
 		} catch (error) {
-		  console.error('保存联赛失败:', error);
+		  console.error("Error saving league:", error);
+		  alert("An error occurred while saving the league.");
 		}
 	  },
-	  async deleteLeague(league) {
+	  async deleteLeague(leagueID) {
 		try {
-		  await deleteLeague(league.id);
+		  await deleteLeague(leagueID);
+		  alert("League deleted successfully!");
 		  this.fetchLeagues();
 		} catch (error) {
-		  console.error('删除联赛失败:', error);
+		  console.error("Error deleting league:", error);
+		  alert("An error occurred while deleting the league.");
 		}
 	  },
-	  async archiveLeague(league) {
-		try {
-		  league.isArchived = true;
-		  await updateLeague(league.id, league);
-		  this.fetchLeagues();
-		} catch (error) {
-		  console.error('归档联赛失败:', error);
-		}
-	  },
-	  async activateLeague(league) {
-		try {
-		  league.isArchived = false;
-		  await updateLeague(league.id, league);
-		  this.fetchLeagues();
-		} catch (error) {
-		  console.error('激活联赛失败:', error);
-		}
-	  },
+	},
+	mounted() {
+	  this.fetchLeagues();
 	},
   };
   </script>
   
   <style scoped>
-  /* 样式已在全局 styles.css 中定义 */
+  /* 样式可根据需求调整 */
+  .modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: rgba(0, 0, 0, 0.5);
+  }
+  
+  .modal-content {
+	background: white;
+	padding: 20px;
+	border-radius: 8px;
+	width: 400px;
+	text-align: center;
+  }
   </style>
   

@@ -1,12 +1,14 @@
 // src/api/users.js
 import apiClient from './api';
+import { toFormData } from './api';
 
 export async function registerUser(userData) {
   return await apiClient.post('/api/users/register', userData);
 }
 
 export async function loginUser(credentials) {
-  return await apiClient.post('/api/users/login', credentials);
+  const formData = toFormData(credentials);
+  return await apiClient.post('/api/users/login', formData);
 }
 
 export async function getUserProfile() {
@@ -14,6 +16,7 @@ export async function getUserProfile() {
 }
 
 export async function updateUserSettings(settings) {
-  return await apiClient.put('/api/users/settings', settings);
+  const formData = toFormData(settings);
+  return await apiClient.put('/api/users/settings', formData);
 }
 
