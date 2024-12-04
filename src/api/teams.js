@@ -25,15 +25,13 @@ export const createTeam = async (data) => {
     console.log('Creating team with data:', {
       name: data.name,
       owner: parseInt(data.owner),
-      leagueID: parseInt(data.league),
-      status: data.status
+      leagueID: parseInt(data.league)
     });
 
     const response = await apiClient.post("/api/teams/", {
       name: data.name,
       owner: parseInt(data.owner),
-      leagueID: parseInt(data.league),
-      status: data.status
+      leagueID: parseInt(data.league)
     }, {
       headers: { 
         "Content-Type": "application/json",

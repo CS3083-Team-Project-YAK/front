@@ -26,30 +26,38 @@
       </tbody>
     </table>
 
-    <!-- Modal for creating or editing teams -->
-    <div v-if="showModal" class="modal">
-		<TeamForm
-    :initialTeam="selectedTeam"
-    :isEditMode="isEditMode"
-    @team-saved="handleTeamSaved"
-    @close="closeModal"
-  	/>
-	</div>
+    <!-- Separate Modals for creating and editing teams -->
+    <div v-if="showCreateModal" class="modal">
+      <CreateTeamModal
+        @team-saved="handleTeamSaved"
+        @close="closeCreateModal"
+      />
+    </div>
+
+    <div v-if="showEditModal" class="modal">
+      <TeamForm
+        :initialTeam="selectedTeam"
+        :isEditMode="true"
+        @team-saved="handleTeamSaved"
+        @close="closeEditModal"
+      />
+    </div>
   </div>
 </template>
 
 <script>
 import { deleteTeam, getTeams } from "@/api/teams";
 import TeamForm from "@/components/TeamForm.vue";
+import CreateTeamModal from "@/components/CreateTeamModal.vue";
 
 export default {
   name: "TeamView",
-  components: { TeamForm },
+  components: { TeamForm, CreateTeamModal },
   data() {
     return {
       teams: [],
-      showModal: false,
-      isEditMode: false,
+      showCreateModal: false,
+      showEditModal: false,
       selectedTeam: null,
     };
   },
@@ -64,28 +72,29 @@ export default {
       }
     },
     openCreateModal() {
-      this.isEditMode = false;
-      this.selectedTeam = null;
-      this.showModal = true;
+      this.showCreateModal = true;
     },
     openEditModal(team) {
-      this.isEditMode = true;
       this.selectedTeam = {
-        id: team.teamID, // Map teamID to id for the form
+        teamID: team.teamID,
         name: team.name,
         owner: team.owner,
-        league: team.leagueID, // Map leagueID to league for the form
+        league: team.leagueID,
         status: team.status
       };
-      this.showModal = true;
+      this.showEditModal = true;
     },
-    closeModal() {
-      this.showModal = false;
+    closeCreateModal() {
+      this.showCreateModal = false;
+    },
+    closeEditModal() {
+      this.showEditModal = false;
+      this.selectedTeam = null;
     },
     async deleteTeam(team) {
       if (confirm(`Are you sure you want to delete ${team.name}?`)) {
         try {
-          await deleteTeam(team.teamID); // Changed from team.id to team.teamID
+          await deleteTeam(team.teamID); // Change from team.id to team.teamID
           alert("Team deleted successfully!");
           this.fetchTeams();
         } catch (error) {
@@ -95,7 +104,8 @@ export default {
     },
     handleTeamSaved() {
       this.fetchTeams();
-      this.closeModal();
+      this.closeCreateModal();
+      this.closeEditModal();
     },
   },
   created() {

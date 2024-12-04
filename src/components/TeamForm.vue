@@ -37,8 +37,8 @@
     <div class="form-group">
       <label for="status">Status</label>
       <select id="status" v-model="team.status">
-        <option value="A">Active</option>
-        <option value="I">Inactive</option>
+        <option value="A">ACTIVE</option>
+        <option value="I">INACTIVE</option>
       </select>
     </div>
 
@@ -70,6 +70,7 @@ export default {
         name: "",
         owner: "",
         league: "",
+        status: "A",
         status: "A",
       }),
     },
@@ -130,11 +131,7 @@ export default {
         console.log('Submitting team data:', teamData);
 
         if (this.isEditMode) {
-          if (!this.team.id) {
-            this.error = "Team ID is missing";
-            return;
-          }
-          await updateTeam(this.team.id, teamData);
+          await updateTeam(this.team.teamID, teamData); // Change from this.team.id to this.team.teamID
           this.$emit("team-saved", "Team updated successfully!");
         } else {
           await createTeam(teamData);
@@ -171,6 +168,7 @@ export default {
         name: "",
         owner: "",
         league: "",
+        status: "A",
         status: "A",
       };
       this.error = null;
