@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://127.0.0.1:8000', // 替换为实际的API URL
+  baseURL: 'https://cs3083.qsq.one/api', // 替换为实际的API URL
   withCredentials: true, // 如果需要携带凭据
 });
 
